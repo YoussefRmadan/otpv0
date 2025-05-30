@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      text-align: center;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #357ae8;
+    }
+    #recaptcha-container {
+      margin: 15px 0;
+      display: flex;
+      justify-content: center;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>تسجيل الدخول</h2>
+    
+    <div id="phone-auth">
+      <input type="tel" id="phone-number" placeholder="أدخل رقم الهاتف مع رمز الدولة" required>
+      <button id="send-otp">إرسال رمز التحقق</button>
+    </div>
+    
+    <div id="otp-auth" class="hidden">
+      <input type="text" id="otp-code" placeholder="أدخل رمز التحقق" required>
+      <button id="verify-otp">تحقق</button>
+    </div>
+    
+    <div id="recaptcha-container"></div>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCqY6HnSEYqaUKAcE6VueOAv0NF3Xp4fGo",
+      authDomain: "otpphone-3f1c9.firebaseapp.com",
+      projectId: "otpphone-3f1c9",
+      storageBucket: "otpphone-3f1c9.appspot.com",
+      messagingSenderId: "920505952084",
+      appId: "1:920505952084:web:8758ef831899beff194ac1",
+      measurementId: "G-700Z7CCVW8"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // DOM elements
+    const phoneNumberInput = document.getElementById('phone-number');
+    const sendOtpButton = document.getElementById('send-otp');
+    const otpAuthDiv = document.getElementById('otp-auth');
+    const otpCodeInput = document.getElementById('otp-code');
+    const verifyOtpButton = document.getElementById('verify-otp');
+    const messageDiv = document.getElementById('message');
+    const recaptchaContainer = document.getElementById('recaptcha-container');
+
+    let confirmationResult;
+    let recaptchaVerifier;
+
+    // Initialize reCAPTCHA
+    window.onload = function() {
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber
+        }
+      });
+    };
+
+    // Send OTP
+    sendOtpButton.addEventListener('click', () => {
+      const phoneNumber = phoneNumberInput.value;
+      
+      if (!phoneNumber) {
+        showMessage('الرجاء إدخال رقم الهاتف', 'error');
+        return;
+      }
+
+      auth.signInWithPhoneNumber(phoneNumber, recaptchaVerifier)
+        .then((result) => {
+          confirmationResult = result;
+          otpAuthDiv.classList.remove('hidden');
+          phoneNumberInput.disabled = true;
+          sendOtpButton.disabled = true;
+          showMessage('تم إرسال رمز التحقق إلى هاتفك', 'success');
+        })
+        .catch((error) => {
+          showMessage('حدث خطأ: ' + error.message, 'error');
+        });
+    });
+
+    // Verify OTP
+    verifyOtpButton.addEventListener('click', () => {
+      const otpCode = otpCodeInput.value;
+      
+      if (!otpCode) {
+        showMessage('الرجاء إدخال رمز التحقق', 'error');
+        return;
+      }
+
+      confirmationResult.confirm(otpCode)
+        .then((result) => {
+          // User signed in successfully
+          showMessage('تم تسجيل الدخول بنجاح!', 'success');
+          setTimeout(() => {
+            window.location.href = "casio-calculator.html";
+          }, 2000);
+        })
+        .catch((error) => {
+          showMessage('رمز التحقق غير صحيح', 'error');
+        });
+    });
+
+    function showMessage(message, type) {
+      messageDiv.textContent = message;
+      messageDiv.style.color = type === 'error' ? 'red' : 'green';
+    }
+  </script>
+</body>
+</html>

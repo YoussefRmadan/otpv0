@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>آلة حاسبة كاسيو</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .calculator {
+      background-color: #d9d9d9;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      width: 300px;
+    }
+    .display {
+      background-color: #a3af9a;
+      color: #1a1a1a;
+      font-size: 2em;
+      padding: 15px;
+      text-align: right;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-family: 'Digital', monospace;
+      height: 40px;
+      overflow: hidden;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+    }
+    button {
+      background-color: #4d4d4d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 15px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #666;
+    }
+    .function {
+      background-color: #666;
+    }
+    .operator {
+      background-color: #ff9500;
+    }
+    .equals {
+      background-color: #ff9500;
+    }
+    .clear {
+      background-color: #ac3939;
+    }
+    @font-face {
+      font-family: 'Digital';
+      src: url('https://cdn.jsdelivr.net/gh/aaaakshat/cm-web-fonts@latest/fonts/CasioFx-9850GBPlus/CasioFx-9850GBPlus.woff2') format('woff2');
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="function" onclick="clearDisplay()">AC</button>
+      <button class="function" onclick="toggleSign()">+/-</button>
+      <button class="function" onclick="percentage()">%</button>
+      <button class="operator" onclick="appendOperator('/')">÷</button>
+      
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button class="operator" onclick="appendOperator('*')">×</button>
+      
+      <button onclick="appendNumber('4')">4</button>
+      <button onclick="appendNumber('5')">5</button>
+      <button onclick="appendNumber('6')">6</button>
+      <button class="operator" onclick="appendOperator('-')">-</button>
+      
+      <button onclick="appendNumber('1')">1</button>
+      <button onclick="appendNumber('2')">2</button>
+      <button onclick="appendNumber('3')">3</button>
+      <button class="operator" onclick="appendOperator('+')">+</button>
+      
+      <button onclick="appendNumber('0')" style="grid-column: span 2;">0</button>
+      <button onclick="appendDecimal()">.</button>
+      <button class="equals" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    let currentInput = '0';
+    let previousInput = '';
+    let operation = null;
+    let resetInput = false;
+    const display = document.getElementById('display');
+
+    function updateDisplay() {
+      display.textContent = currentInput;
+    }
+
+    function appendNumber(number) {
+      if (currentInput === '0' || resetInput) {
+        currentInput = number;
+        resetInput = false;
+      } else {
+        currentInput += number;
+      }
+      updateDisplay();
+    }
+
+    function appendDecimal() {
+      if (resetInput) {
+        currentInput = '0.';
+        resetInput = false;
+      } else if (!currentInput.includes('.')) {
+        currentInput += '.';
+      }
+      updateDisplay();
+    }
+
+    function clearDisplay() {
+      currentInput = '0';
+      previousInput = '';
+      operation = null;
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      currentInput = (parseFloat(currentInput) * -1).toString();
+      updateDisplay();
+    }
+
+    function percentage() {
+      currentInput = (parseFloat(currentInput) / 100).toString();
+      updateDisplay();
+    }
+
+    function appendOperator(op) {
+      if (operation !== null) calculate();
+      previousInput = currentInput;
+      operation = op;
+      resetInput = true;
+    }
+
+    function calculate() {
+      if (operation === null || resetInput) return;
+      
+      let result;
+      const prev = parseFloat(previousInput);
+      const current = parseFloat(currentInput);
+      
+      switch (operation) {
+        case '+':
+          result = prev + current;
+          break;
+        case '-':
+          result = prev - current;
+          break;
+        case '*':
+          result = prev * current;
+          break;
+        case '/':
+          result = prev / current;
+          break;
+        default:
+          return;
+      }
+      
+      currentInput = result.toString();
+      operation = null;
+      resetInput = true;
+      updateDisplay();
+    }
+  </script>
+</body>
+</html>
